@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>GAD-7 - Trouble Anxieux Généralisé</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 30px;
+      background-color: #54A9AE;
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 32px;
+    }
+
+    .retour {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .retour a {
+      text-decoration: none;
+      color: #ffffff;
+      background-color: #2c3e50;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    .retour a:hover {
+      background-color: #1a242f;
+    }
+
+    .form-block {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 25px 30px;
+      margin: 30px auto;
+      max-width: 900px;
+      text-align: left;
+      transition: transform 0.2s ease;
+    }
+
+    .form-block:hover {
+      transform: scale(1.01);
+    }
+
+    .form-block.id-block {
+      background: #e0e0e0;
+      box-shadow: none;
+      transition: none;
+    }
+
+    .form-block.id-block:hover {
+      transform: none;
+    }
+
+    .instruction h2 {
+      margin-top: 0;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    label {
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    input[type="radio"], input[type="text"] {
+      margin-right: 6px;
+      font-size: 14px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 300px;
+      padding: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+<div class="retour">
+  <a href="index.html">← Retour</a>
+</div>
+
+<h1>GAD-7 - Trouble Anxieux Généralisé</h1>
+
+<div class="form-block id-block">
+  <label for="patientId">Identifiant Patient :</label><br>
+  <input type="text" id="patientId" name="patientId" placeholder="Ex : ABC123" required>
+</div>
+
+<div class="form-block instruction">
+  <h2>Instructions</h2>
+  <p>Au cours des deux dernières semaines, à quelle fréquence avez-vous été dérangé(e) par les problèmes suivants ?</p>
+  <p><strong>Cochez la case appropriée.</strong></p>
+</div>
+
+<form id="gadForm">
+  <div id="questions"></div>
+  <button type="button" onclick="generateCSV()">Télécharger en CSV</button>
+</form>
+
+<script>
+  const reponses = [
+    "Jamais",
+    "Plusieurs jours",
+    "Plus de la moitié des jours",
+    "Presque tous les jours"
+  ];
+
+  const items = [
+    "Sentiment de nervosité, d’anxiété ou de tension",
+    "Incapable d’arrêter de vous inquiéter ou de contrôler vos inquiétudes",
+    "Inquiétudes excessives à propos de tout et de rien",
+    "Difficulté à se détendre",
+    "Agitation telle qu’il est difficile de rester tranquille",
+    "Devenir facilement contrarié(e) ou irritable",
+    "Avoir peur que quelque chose d’épouvantable puisse arriver"
+  ];
+
+  const container = document.getElementById("questions");
+
+  items.forEach((text, index) => {
+    const div = document.createElement("div");
+    div.classList.add("form-block");
+    div.innerHTML =
+      `<p><strong>${index + 1}. ${text}</strong></p>` +
+      `<div class="options">` +
+      reponses.map((rep, val) => `
+        <label>
+          <input type="radio" name="q${index}" value="${val}">
+          ${rep}
+        </label>
+      `).join("") +
+      `</div>`;
+    container.appendChild(div);
+  });
+
+  function generateCSV() {
+    const patientId = document.getElementById("patientId").value.trim();
+    if (!patientId) {
+      alert("Veuillez renseigner l'identifiant patient avant de télécharger les résultats.");
+      return;
+    }
+
+    let csvContent = `Identifiant;${patientId}\n\nNuméro;Question;Réponse\n`;
+
+    items.forEach((q, i) => {
+      const radios = document.getElementsByName(`q${i}`);
+      let selected = "Non répondu";
+      radios.forEach(r => { if (r.checked) selected = r.value; });
+
+      const questionEscaped = q.replace(/"/g, '""');
+      csvContent += `"${i + 1}";"${questionEscaped}";"${selected}"\n`;
+    });
+
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${patientId}_GAD7_resultats.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+</body>
+</html>
